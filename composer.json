@@ -1,0 +1,54 @@
+{
+    "name": "schemastud/laravel-doctor",
+    "description": "Moat-free doctor-audit primitives: the Finding value object and the Pass/Warn/Fail DoctorStatus vocabulary that every readiness doctor (foundation Beam and the paid satellite) reports in. Foundation-vendor, zero product dependency (ADR-0095).",
+    "keywords": ["laravel", "schemastud", "doctor", "readiness", "audit"],
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Stephen Rushing",
+            "email": "stephenr85@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "pestphp/pest": "^2.0|^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Schemastud\\Doctor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Schemastud\\Doctor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.0.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Schemastud\\Doctor\\ServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "pint": "@php -d memory_limit=512M vendor/bin/pint"
+    }
+}
