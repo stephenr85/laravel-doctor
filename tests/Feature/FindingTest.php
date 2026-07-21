@@ -1,7 +1,7 @@
 <?php
 
-use Schemastud\Doctor\DoctorStatus;
-use Schemastud\Doctor\Finding;
+use Rushing\Doctor\DoctorStatus;
+use Rushing\Doctor\Finding;
 
 it('builds a finding via the status factories', function () {
     $pass = Finding::pass('db', 'connected');

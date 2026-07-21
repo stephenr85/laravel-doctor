@@ -1,6 +1,6 @@
 <?php
 
-use Schemastud\Doctor\DoctorStatus;
+use Rushing\Doctor\DoctorStatus;
 
 it('carries the pass/warn/fail vocabulary as a backed enum', function () {
     expect(DoctorStatus::Pass->value)->toBe('pass');

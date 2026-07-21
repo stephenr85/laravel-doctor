@@ -1,17 +1,18 @@
-# schemastud/laravel-doctor
+# rushing/laravel-doctor
 
-Moat-free **doctor-audit primitives** — the shared vocabulary every readiness doctor reports in,
-owned by the foundation vendor (`schemastud/*`) with **zero dependency on the product/moat**
-(`splicewire/laravel-satellite`).
+Generic **doctor-audit primitives** — the shared vocabulary every readiness doctor reports in, with
+**zero dependency on any product**. A generic package-development primitive (hence the personal
+`rushing/*` namespace), consumed by both the free-tier Beam readiness doctor and the
+`splicewire/laravel-satellite` doctor.
 
 Two primitives:
 
-- **`Schemastud\Doctor\DoctorStatus`** — the `Pass` / `Warn` / `Fail` backed enum.
-- **`Schemastud\Doctor\Finding`** — one readiness-check result: a `DoctorStatus`, the check name,
+- **`Rushing\Doctor\DoctorStatus`** — the `Pass` / `Warn` / `Fail` backed enum.
+- **`Rushing\Doctor\Finding`** — one readiness-check result: a `DoctorStatus`, the check name,
   and a human-readable detail. Built via `Finding::pass()` / `warn()` / `fail()` or directly.
 
 ```php
-use Schemastud\Doctor\Finding;
+use Rushing\Doctor\Finding;
 
 $findings = [
     Finding::pass('php', 'PHP 8.3 present'),
@@ -22,12 +23,12 @@ $findings = [
 
 ## Why it exists (ADR-0095)
 
-These primitives used to live in the paid `splicewire/laravel-satellite` package, which forced any
-foundation-layer doctor (the free-tier **Beam** readiness doctor, `schemastud/laravel-beam-commerce`)
-to require the moat just to self-diagnose. **ADR-0095** relocates them to this moat-free foundation
-package so both the free Beam doctor and the paid satellite doctor consume them from a common,
-product-free home. `splicewire/laravel-satellite` keeps a deprecated re-export shim at the old paths
-so existing consumers compile unchanged until they migrate their imports (dropped in a later step).
+These primitives used to live in the `splicewire/laravel-satellite` package, which forced any
+base-layer doctor (the free-tier **Beam** readiness doctor, `schemastud/laravel-beam-commerce`) to
+require the whole product just to self-diagnose. **ADR-0095** relocates them to this generic,
+product-free package so both the free Beam doctor and the satellite doctor consume them from a common
+home. (Originally extracted under `schemastud/`; later moved to the `rushing/*` namespace since the
+primitives are generic package-development scaffolding, not foundation-specific.)
 
 ## Scope
 

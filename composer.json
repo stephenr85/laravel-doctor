@@ -1,5 +1,5 @@
 {
-    "name": "schemastud/laravel-doctor",
+    "name": "rushing/laravel-doctor",
     "description": "Moat-free doctor-audit primitives: the Finding value object and the Pass/Warn/Fail DoctorStatus vocabulary that every readiness doctor (foundation Beam and the paid satellite) reports in. Foundation-vendor, zero product dependency (ADR-0095).",
     "keywords": ["laravel", "schemastud", "doctor", "readiness", "audit"],
     "type": "library",
@@ -21,12 +21,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Schemastud\\Doctor\\": "src/"
+            "Rushing\\Doctor\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Schemastud\\Doctor\\Tests\\": "tests/"
+            "Rushing\\Doctor\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -35,7 +35,7 @@
         },
         "laravel": {
             "providers": [
-                "Schemastud\\Doctor\\ServiceProvider"
+                "Rushing\\Doctor\\ServiceProvider"
             ]
         }
     },

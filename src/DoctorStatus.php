@@ -1,6 +1,6 @@
 <?php
 
-namespace Schemastud\Doctor;
+namespace Rushing\Doctor;
 
 /**
  * The Pass/Warn/Fail status vocabulary a readiness doctor reports each check in.

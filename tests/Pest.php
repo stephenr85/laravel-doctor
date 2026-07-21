@@ -1,5 +1,5 @@
 <?php
 
-use Schemastud\Doctor\Tests\TestCase;
+use Rushing\Doctor\Tests\TestCase;
 
 uses(TestCase::class)->in('Feature');

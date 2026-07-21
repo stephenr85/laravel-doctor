@@ -1,9 +1,9 @@
 <?php
 
-namespace Schemastud\Doctor\Tests;
+namespace Rushing\Doctor\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
-use Schemastud\Doctor\ServiceProvider;
+use Rushing\Doctor\ServiceProvider;
 
 abstract class TestCase extends Orchestra
 {

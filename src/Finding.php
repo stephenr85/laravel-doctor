@@ -1,6 +1,6 @@
 <?php
 
-namespace Schemastud\Doctor;
+namespace Rushing\Doctor;
 
 /**
  * One readiness-check result: a {@see DoctorStatus}, the check's name, and a human detail.

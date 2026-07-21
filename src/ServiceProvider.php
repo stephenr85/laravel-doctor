@@ -1,6 +1,6 @@
 <?php
 
-namespace Schemastud\Doctor;
+namespace Rushing\Doctor;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
