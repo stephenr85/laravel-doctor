@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Doctor;
 
 /**
@@ -10,7 +8,7 @@ namespace Rushing\Doctor;
  * {@see DoctorStatus::Fail} turns the doctor command red, an advisory one renders Pass/Warn/Fail but
  * never fails the exit code.
  */
-final class DoctorRegistration
+class DoctorRegistration
 {
     /**
      * @param  string  $package  the registering package's name (operator output only — the host never branches on it)
@@ -19,9 +17,9 @@ final class DoctorRegistration
      * @param  int  $order  lower runs first; core audits render first, consumers default to 100
      */
     public function __construct(
-        public readonly string $package,
-        public readonly string $audit,
-        public readonly bool $gate = false,
-        public readonly int $order = 100,
+        public string $package,
+        public string $audit,
+        public bool $gate = false,
+        public int $order = 100,
     ) {}
 }
