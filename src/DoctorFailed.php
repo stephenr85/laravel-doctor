@@ -37,13 +37,13 @@ class DoctorFailed extends RuntimeException
      * re-derive it. Suggestions are passed through exactly as the audit emitted them — the runner never
      * promotes one across a tier boundary, which is enforced structurally by never reading them.
      *
-     * @return list<FixableFinding>
+     * @return list<Finding&SuggestsFix>
      */
     public function fixable(): array
     {
         return array_values(array_filter(
             $this->blocking,
-            fn (Finding $finding) => $finding instanceof FixableFinding && $finding->operation !== null,
+            fn (Finding $finding) => $finding instanceof SuggestsFix && $finding->fixSuggestion() !== null,
         ));
     }
 }

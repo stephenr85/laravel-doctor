@@ -43,13 +43,13 @@ class DoctorReport
      * The findings that carry a suggested correction — so a caller can generate fixes without re-deriving
      * them. Their suggestions pass through untouched.
      *
-     * @return list<FixableFinding>
+     * @return list<Finding&SuggestsFix>
      */
     public function fixable(): array
     {
         return array_values(array_filter(
             $this->findings,
-            fn (Finding $finding) => $finding instanceof FixableFinding && $finding->operation !== null,
+            fn (Finding $finding) => $finding instanceof SuggestsFix && $finding->fixSuggestion() !== null,
         ));
     }
 

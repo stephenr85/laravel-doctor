@@ -7,7 +7,7 @@ use Rushing\Doctor\DoctorRenderer;
 use Rushing\Doctor\DoctorRunner;
 use Rushing\Doctor\DoctorStatus;
 use Rushing\Doctor\Finding;
-use Rushing\Doctor\FixableFinding;
+use Rushing\Doctor\SuggestsFix;
 
 /**
  * particle-doctrine-convergence ticket 07 — the runner this package was reserved for.
@@ -42,11 +42,25 @@ class FailingAudit implements DoctorAudit
     }
 }
 
+/** A consumer-owned finding that opts into carrying a fix — the shape the marker interface is designed for. */
+class SuggestingFinding extends Finding implements SuggestsFix
+{
+    public function __construct(string $check, string $detail, private mixed $suggestion)
+    {
+        parent::__construct(DoctorStatus::Fail, $check, $detail);
+    }
+
+    public function fixSuggestion(): mixed
+    {
+        return $this->suggestion;
+    }
+}
+
 class FixableAudit implements DoctorAudit
 {
     public function run(): array
     {
-        return [FixableFinding::failFixable('fixable', 'broken but correctable', FixSuggestion::instance())];
+        return [new SuggestingFinding('fixable', 'broken but correctable', FixSuggestion::instance())];
     }
 }
 
@@ -183,9 +197,9 @@ it('carries the fixable findings on the thrown failure with their suggestions in
 
         expect($fixable)->toHaveCount(1)
             // Same instance, not a copy: the runner passes the suggestion through rather than rebuilding it.
-            ->and($fixable[0]->operation)->toBe(FixSuggestion::instance())
+            ->and($fixable[0]->fixSuggestion())->toBe(FixSuggestion::instance())
             // And it never touched the tier — the guarantee is structural, since the runner cannot read it.
-            ->and($fixable[0]->operation->tier)->toBe('guided');
+            ->and($fixable[0]->fixSuggestion()->tier)->toBe('guided');
     }
 });
 
