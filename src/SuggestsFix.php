@@ -16,6 +16,13 @@ namespace Rushing\Doctor;
  *      tool suggests fixes. That opacity is also what makes {@see DoctorRunner}'s no-promotion guarantee
  *      structural rather than a convention: the runner cannot promote a suggestion across an
  *      automated/guided/advisory tier boundary it is unable to read.
+ *
+ * INTENTIONALLY UNUSED SEAM (verified 2026-08-13): no Finding in the estate implements this yet, so
+ * {@see DoctorReport::fixable()} and {@see DoctorFailed::fixable()} currently return empty lists. That is a
+ * decision, not an oversight — surgeon's `FixableFinding` wraps a Finding by composition rather than
+ * subclassing it, so today's only fix vocabulary cannot flow through here, and a contrived implementor just
+ * to exercise the methods would be dishonest. The seam stays because it is the declared opt-in path for the
+ * first Finding subclass that genuinely carries its own correction.
  */
 interface SuggestsFix
 {

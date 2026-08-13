@@ -37,6 +37,9 @@ class DoctorFailed extends RuntimeException
      * re-derive it. Suggestions are passed through exactly as the audit emitted them — the runner never
      * promotes one across a tier boundary, which is enforced structurally by never reading them.
      *
+     * Currently returns an empty list for every caller: {@see SuggestsFix} has no implementors yet, by
+     * decision — see its docblock. This is the seam's read side, kept for the first finding that opts in.
+     *
      * @return list<Finding&SuggestsFix>
      */
     public function fixable(): array

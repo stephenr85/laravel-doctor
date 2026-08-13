@@ -43,6 +43,9 @@ class DoctorReport
      * The findings that carry a suggested correction — so a caller can generate fixes without re-deriving
      * them. Their suggestions pass through untouched.
      *
+     * Currently returns an empty list for every caller: {@see SuggestsFix} has no implementors yet, by
+     * decision — see its docblock. This is the seam's read side, kept for the first finding that opts in.
+     *
      * @return list<Finding&SuggestsFix>
      */
     public function fixable(): array
