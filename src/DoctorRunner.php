@@ -3,6 +3,7 @@
 namespace Rushing\Doctor;
 
 use Illuminate\Contracts\Container\Container;
+use Throwable;
 
 /**
  * Runs registered audits, collects their findings, and THROWS above a configured severity floor.
@@ -18,6 +19,13 @@ use Illuminate\Contracts\Container\Container;
  *      audit that threw would hardcode one of those three answers for all of them.
  *   2. **The floor is per invocation**, not per audit. A repo mid-migration reports without failing; a
  *      converged repo fails on regression. Same audits, same findings, different floor.
+ *
+ * **A throwing audit is a finding, never the end of the command (ticket 72).** Both phases — resolving the
+ * registration and running the audit — are guarded, and the throw becomes an {@see AuditError} finding that
+ * flows through the floor test like any other. Without that, one audit meeting an unmet precondition took
+ * every `*:doctor` command down along with every finding already collected, at exactly the roots whose
+ * report was worth reading. The audit contract is untouched: audits stay pure reporters, and the catch is
+ * the runner's, which is the same split the throw already lives on.
  *
  * The gate/advisory flag on a {@see DoctorRegistration} is orthogonal to the floor and still governs: an
  * advisory audit renders its findings and never blocks, no matter how severe or how low the floor. Advisory
@@ -38,9 +46,7 @@ class DoctorRunner
         $blocking = [];
 
         foreach ($this->ordered($registrations) as $registration) {
-            $audit = $this->container->make($registration->audit);
-
-            foreach ($audit->run() as $finding) {
+            foreach ($this->collect($registration) as $finding) {
                 $findings[] = $finding;
 
                 if ($registration->gate && $finding->status->atLeast($floor)) {
@@ -56,6 +62,36 @@ class DoctorRunner
         }
 
         return $report;
+    }
+
+    /**
+     * One registration's findings — or, if it could not report, the single {@see AuditError} finding it
+     * becomes. Both phases are guarded, because both fail for the same reason (a root whose state or wiring
+     * the audit did not expect) and neither is the run's business to die on.
+     *
+     * The error finding is returned into the caller's loop rather than appended to the report directly, so it
+     * meets the floor test like any other finding. That is what makes a GATE audit that could not run redden
+     * the exit code: it reaches `$blocking`, so {@see DoctorFailed} is thrown and
+     * {@see Concerns\RunsDoctorFloor::runAtFloor()} converts it back into the command's failure — rather
+     * than merely appearing in the report while the command exits 0.
+     *
+     * @return list<Finding>
+     */
+    private function collect(DoctorRegistration $registration): array
+    {
+        try {
+            $audit = $this->container->make($registration->audit);
+        } catch (Throwable $e) {
+            return [AuditError::resolving($registration->audit, $registration->gate, $e)];
+        }
+
+        try {
+            // A non-DoctorAudit resolved out of the container lands here too, as an Error — the manifest is
+            // string-typed, so "not an audit at all" is the same class of stale wiring.
+            return $audit->run();
+        } catch (Throwable $e) {
+            return [AuditError::running($registration->audit, $registration->gate, $e)];
+        }
     }
 
     /**

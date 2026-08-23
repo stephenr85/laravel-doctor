@@ -1,5 +1,6 @@
 <?php
 
+use Rushing\Doctor\AuditError;
 use Rushing\Doctor\DoctorAudit;
 use Rushing\Doctor\DoctorFailed;
 use Rushing\Doctor\DoctorRegistration;
@@ -243,4 +244,82 @@ it('orders the status vocabulary', function () {
     expect(DoctorStatus::Fail->atLeast(DoctorStatus::Warn))->toBeTrue()
         ->and(DoctorStatus::Warn->atLeast(DoctorStatus::Warn))->toBeTrue()
         ->and(DoctorStatus::Pass->atLeast(DoctorStatus::Warn))->toBeFalse();
+});
+
+// ── ticket 72 — a throwing audit is a finding, never the end of the command ────
+
+class ThrowingAudit implements DoctorAudit
+{
+    public function run(): array
+    {
+        // The specimen shape: a query against a column a lagging database has not got, whose message
+        // carries whole SQL over several lines.
+        throw new RuntimeException("SQLSTATE[42S22]: Unknown column 'deleted_at'\nthe second line nobody needs");
+    }
+}
+
+class UnconstructableAudit implements DoctorAudit
+{
+    public function __construct()
+    {
+        throw new RuntimeException('this audit cannot be built');
+    }
+
+    public function run(): array
+    {
+        return [];
+    }
+}
+
+/** Registered in a manifest, resolvable, and not an audit at all — the same class of stale wiring. */
+class NotAnAudit {}
+
+it('turns a throwing audit into a finding and runs the rest of the manifest', function () {
+    $report = runner()->run([advisory(ThrowingAudit::class), advisory(PassingAudit::class)]);
+
+    // Before this, the throw escaped `run()` and PassingAudit's already-collected finding died with the
+    // command — at exactly the roots whose report is worth reading.
+    expect($report->findings)->toHaveCount(2)
+        ->and($report->findings[1]->check)->toBe('passing');
+
+    $errored = $report->findings[0];
+
+    expect($errored->check)->toBe(AuditError::CHECK)
+        ->and($errored->status)->toBe(DoctorStatus::Warn)
+        ->and($errored->detail)->toContain(ThrowingAudit::class)
+        ->and($errored->detail)->toContain('RuntimeException')
+        ->and($errored->detail)->toContain("Unknown column 'deleted_at'")
+        ->and($errored->detail)->not->toContain('the second line nobody needs'); // one line, bounded
+});
+
+it('reports a registration it cannot even resolve, one phase earlier and told apart', function () {
+    $missing = runner()->run([advisory('Rushing\Doctor\Tests\NoSuchAudit')]);
+    $unconstructable = runner()->run([advisory(UnconstructableAudit::class)]);
+    $notAnAudit = runner()->run([advisory(NotAnAudit::class)]);
+
+    expect($missing->findings[0]->check)->toBe(AuditError::CHECK_RESOLVE)
+        ->and($missing->findings[0]->detail)->toContain('could not be resolved')
+        ->and($unconstructable->findings[0]->check)->toBe(AuditError::CHECK_RESOLVE)
+        ->and($unconstructable->findings[0]->detail)->toContain('this audit cannot be built')
+        // A resolvable non-audit throws on the call, not on the make — reported as the run phase, which is
+        // where the Error actually happened.
+        ->and($notAnAudit->findings[0]->check)->toBe(AuditError::CHECK)
+        ->and($notAnAudit->findings[0]->detail)->toContain('Error');
+});
+
+it('reports a throwing GATE audit as Fail, because an unverified gate is not a passed gate', function () {
+    try {
+        runner()->run([gated(ThrowingAudit::class)], DoctorStatus::Fail);
+        throw new RuntimeException('expected DoctorFailed');
+    } catch (DoctorFailed $failure) {
+        // The point of the ticket: the error finding meets the floor test like any other, so it reaches
+        // `$blocking` and the runner throws — it does not merely appear in the report.
+        expect($failure->blocking)->toHaveCount(1)
+            ->and($failure->blocking[0]->status)->toBe(DoctorStatus::Fail)
+            ->and($failure->blocking[0]->detail)->toContain('unverified is not passed');
+    }
+
+    // …and an advisory registration never reddens anything on the strength of not knowing.
+    expect(runner()->run([advisory(ThrowingAudit::class)], DoctorStatus::Pass)->worst())
+        ->toBe(DoctorStatus::Warn);
 });
