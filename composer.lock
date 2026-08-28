@@ -8551,16 +8551,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/stephenr85/php-package-topology.git",
-                "reference": "38d3b73f634244f8a9bc6f0329b33d3eeaab9f03"
+                "reference": "ee8bc85eea77d8eeb53b430b08f690715892d570"
             },
             "require": {
+                "galbar/jsonpath": "^3.0",
                 "php": "^8.3",
                 "rushing/php-graphine": "dev-main"
             },
             "require-dev": {
                 "laravel/pint": "^1.0",
                 "nikic/php-parser": "^5.0",
-                "pestphp/pest": "^4.0"
+                "pestphp/pest": "^4.0",
+                "wikimedia/composer-merge-plugin": "^2.1"
             },
             "suggest": {
                 "nikic/php-parser": "BSD-3 — the AST scanner behind graphine's SeamGuard, used by the source-import axis (sourceNeverReferences).",
@@ -8568,6 +8570,13 @@
             },
             "default-branch": true,
             "type": "library",
+            "extra": {
+                "merge-plugin": {
+                    "include": [
+                        "composer.local.json"
+                    ]
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Rushing\\PackageTopology\\": "src/"
@@ -8606,7 +8615,7 @@
                 "substrate",
                 "topology"
             ],
-            "time": "2026-08-06T21:42:39+00:00"
+            "time": "2026-08-28T18:40:40+00:00"
         },
         {
             "name": "sebastian/cli-parser",
