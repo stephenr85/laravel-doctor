@@ -17,7 +17,9 @@
     "require-dev": {
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^9.0|^10.0|^11.0",
-        "pestphp/pest": "^2.0|^3.0"
+        "pestphp/pest": "^2.0|^3.0",
+        "rushing/php-package-topology": "dev-main",
+        "wikimedia/composer-merge-plugin": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -37,11 +39,15 @@
             "providers": [
                 "Rushing\\Doctor\\ServiceProvider"
             ]
+        },
+        "merge-plugin": {
+            "include": ["composer.local.json"]
         }
     },
     "config": {
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "wikimedia/composer-merge-plugin": true
         },
         "sort-packages": true
     },
@@ -50,5 +56,15 @@
     "scripts": {
         "test": "vendor/bin/pest",
         "pint": "@php -d memory_limit=512M vendor/bin/pint"
-    }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/stephenr85/php-graphine.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/stephenr85/php-package-topology.git"
+        }
+    ]
 }

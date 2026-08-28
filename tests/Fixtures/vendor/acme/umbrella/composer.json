@@ -1,0 +1,1 @@
+{"name":"acme/umbrella","require":{"acme/engine":"*","acme/quiet":"*"},"extra":{"laravel":{"providers":["Acme\\Umbrella\\UmbrellaServiceProvider","Acme\\Kernel\\KernelServiceProvider"]}}}

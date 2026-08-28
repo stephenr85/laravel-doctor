@@ -1,0 +1,1 @@
+{"name":"acme/engine","require":{"acme/kernel":"*","zeta/leaf":"*"},"extra":{"laravel":{"providers":["Acme\\Engine\\EngineServiceProvider"]}}}

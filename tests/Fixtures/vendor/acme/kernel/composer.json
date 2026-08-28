@@ -1,0 +1,1 @@
+{"name":"acme/kernel","require":{"php":"^8.2"},"extra":{"laravel":{"providers":["Acme\\Kernel\\KernelServiceProvider"]}}}

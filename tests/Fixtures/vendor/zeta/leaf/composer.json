@@ -1,0 +1,1 @@
+{"name":"zeta/leaf","extra":{"laravel":{"providers":["Zeta\\Leaf\\LeafServiceProvider"]}}}
