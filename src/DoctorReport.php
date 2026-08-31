@@ -8,6 +8,10 @@ namespace Rushing\Doctor;
  * A report is a VALUE, not a verdict. It says what was found; whether that constitutes failure is the
  * runner's floor decision, because the same findings legitimately mean "report only" in a repo mid-migration
  * and "fail the build" in a converged one.
+ *
+ * `counts()` and `worst()` read the STATUS and only the status, so they fold a check that measured nothing
+ * into the passes — deliberately, since {@see Finding::$conclusive} is off the enum and changes no floor.
+ * {@see inconclusive()} is where that distinction is read.
  */
 class DoctorReport
 {
@@ -53,6 +57,28 @@ class DoctorReport
         return array_values(array_filter(
             $this->findings,
             fn (Finding $finding) => $finding instanceof SuggestsFix && $finding->fixSuggestion() !== null,
+        ));
+    }
+
+    /**
+     * The findings that measured NOTHING — a check whose population was empty or unreachable, flagged via
+     * {@see Finding::inconclusive()}. They are already in `findings` and already carry a real status, so
+     * `worst()`, `counts()` and every floor are untouched by this method's existence; it is a read side, not
+     * a filter the runner applies.
+     *
+     * Two callers it exists for. A CI summary that wants to say "12 passed, 4 of them measured nothing"
+     * instead of reporting a green it cannot stand behind — which is the false green this flag was added to
+     * end (api-surface-coherence 124). And the review condition attached to that ruling: whether a floor
+     * should ever see inconclusive findings is to be re-examined against the population of audits that
+     * actually emit them, and this is where that population is counted.
+     *
+     * @return list<Finding>
+     */
+    public function inconclusive(): array
+    {
+        return array_values(array_filter(
+            $this->findings,
+            fn (Finding $finding) => ! $finding->conclusive,
         ));
     }
 

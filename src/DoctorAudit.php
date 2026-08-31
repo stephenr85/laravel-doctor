@@ -20,22 +20,30 @@ namespace Rushing\Doctor;
  * it exists to catch deliberately introduced in that package's own source. Every registry-side audit
  * shares the shape.
  *
- * The status vocabulary CANNOT currently carry the distinction: {@see DoctorStatus} is Pass/Warn/Fail
- * with no inconclusive case, so `counts()`, `worst()` and the runner's floor all fold "empty" into
- * "clean". Whether it should gain one is an open ruling (api-surface-coherence 124) — deliberately not
- * settled here, because the severity ordinal it would take is the whole question.
+ * **Say so with {@see Finding::inconclusive()}.** The distinction is NOT on {@see DoctorStatus}: the enum
+ * stays Pass/Warn/Fail and an inconclusive finding still reports `Pass`, so `counts()`, `worst()` and every
+ * `--floor` behave exactly as before. Conclusiveness is a flag on the {@see Finding} instead — ruled
+ * 2026-08-30 (api-surface-coherence 124), off the enum because "inconclusive" has no honest ordinal on a
+ * linear severity ladder, and following the gate/advisory precedent {@see DoctorRegistration} already set
+ * for an orthogonal axis that must not be folded into severity. Read the population back with
+ * {@see DoctorReport::inconclusive()}.
  *
- * Until then, two obligations, and they are on the audit and its caller rather than on this contract:
+ * Three obligations, and the first two are on the audit and its caller rather than on this contract:
  *
  *   1. **An audit NAMES its empty population in the finding's detail**, in prose, rather than falling
  *      through to a generic "clean" message. The `splicewire/laravel-beam` audits do this in eleven
- *      hand-written branches — "No particle operations are registered in this host." — which is why the
- *      distinction is legible to a human reading the report even though it is invisible to a machine
- *      reading the status.
+ *      hand-written branches — "No particle operations are registered in this host." — which is what made
+ *      the distinction legible to a human even while it was invisible to a machine. The flag does not
+ *      replace the prose; it makes the same statement readable by both.
  *   2. **A caller outside the intended host must not read a `Pass` as a measurement.** Nothing in this
  *      contract, in the runner, or in a doctor command REFUSES the out-of-host run — so a package
  *      testbench that wants a guard over its OWN source writes a package-local static test, not a
  *      borrowed host-side audit. See api-surface-coherence 121 for the three that shipped that way.
+ *   3. **Nothing gates on the flag, and that is deliberate — for now.** 124's ruling ships it as a first
+ *      move with a stated review condition: once a meaningful population of audits emits inconclusive
+ *      findings, re-examine whether a floor should see them, with the call-site evidence the flag was
+ *      chosen to generate. The named risk it is guarding against is a flag nobody reads becoming one more
+ *      prose branch wearing a type.
  */
 interface DoctorAudit
 {

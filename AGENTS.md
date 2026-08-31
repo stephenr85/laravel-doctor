@@ -14,3 +14,11 @@ gate audit that cannot run reports `Fail`, because unverified is not passed.
 
 Three axes, the corollaries, and the estate census are in
 `docs/agents/gate-or-advisory.convention.md`.
+
+## Measured clean, or measured nothing?
+
+`Finding::$conclusive` is the sibling flag: an audit whose population is empty or unreachable emits
+`Finding::inconclusive()` rather than `Finding::pass()`, because it has not found its subject clean —
+it has not seen its subject. Like `$gate` it sits **off** `DoctorStatus` (ruled 2026-08-30,
+api-surface-coherence 124): an inconclusive finding still reports `Pass`, so no floor, no `worst()`,
+no `counts()` and no exit code moves. Read the population with `DoctorReport::inconclusive()`.

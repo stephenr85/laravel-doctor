@@ -133,9 +133,20 @@ The zero in the third row is the one live gap and it is **not** a defect: no hos
 package did not already declare. If a host ever registers one, that registration is the host saying
 "this check is mine now" — which is the mechanism working, not a drift.
 
-## Two things this convention does not decide
+## Three things this convention does not decide
 
 - **How loud an advisory is.** Severity (Pass/Warn/Fail) is the audit's own call about what an
   operator should read, and it is orthogonal to gating: a gating audit's `warn` still fails the exit
   code, an advisory audit's `fail` never does.
+- **Whether a check MEASURED anything.** A third orthogonal axis, added 2026-08-30 by the ruling on
+  `api-surface-coherence` ticket 124 and carried by `Finding::$conclusive` /
+  `Finding::inconclusive()`. An audit whose population is empty or unreachable has not found its
+  subject clean — it has not seen its subject — and until the flag existed that said `Pass`, which is
+  the same green as "measured clean". The flag is deliberately **off** `DoctorStatus`, for the same
+  reason `$gate` is: "inconclusive" has no honest ordinal on a linear severity ladder, and the estate
+  had already settled that an axis orthogonal to the floor belongs beside it rather than inside it.
+  **Nothing gates on it**, by the same rule this document opens with — *"is this registry populated in
+  this harness?"* is a fact about the **host**, so it is an advisory finding and never a fatal. Read
+  the population with `DoctorReport::inconclusive()`; the review condition attached to 124's ruling is
+  to revisit whether a floor should ever see it once enough audits emit it.
 - **Whether a check should exist.** This is about the consequence of a finding, not its merit.

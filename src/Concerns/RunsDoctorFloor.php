@@ -57,12 +57,22 @@ trait RunsDoctorFloor
         }
     }
 
+    /**
+     * One finding as the line every command already printed. A finding that measured nothing
+     * ({@see Finding::$conclusive}) renders at its status's level — no gate, no exit-code change, that is
+     * the ruling — but says so in the line, because the operator reading `check: detail` at info level is
+     * exactly the reader the false green was fooling.
+     */
     protected function renderFinding(Finding $finding): void
     {
+        $line = $finding->conclusive
+            ? $finding->check.': '.$finding->detail
+            : $finding->check.' (measured nothing): '.$finding->detail;
+
         match ($finding->status) {
-            DoctorStatus::Pass => $this->components->info($finding->check.': '.$finding->detail),
-            DoctorStatus::Warn => $this->components->warn($finding->check.': '.$finding->detail),
-            DoctorStatus::Fail => $this->components->error($finding->check.': '.$finding->detail),
+            DoctorStatus::Pass => $this->components->info($line),
+            DoctorStatus::Warn => $this->components->warn($line),
+            DoctorStatus::Fail => $this->components->error($line),
         };
     }
 
