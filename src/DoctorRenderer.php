@@ -52,10 +52,16 @@ class DoctorRenderer
      * A check that measured nothing gets its own marker rather than its status's, because the whole point of
      * {@see Finding::$conclusive} is that `[PASS]` over an empty population is the false green. The marker
      * displaces the status only in the badge; the status itself is untouched and still drives every floor.
+     *
+     * **Pass only.** {@see Finding} sanctions pairing the flag with any status, and `[----]` over a Warn or a
+     * Fail would hide the severity — inverting the fix, since the badge is the one thing an operator reads at
+     * a glance. `[PASS]` is the only badge the flag exists to displace: a Warn or a Fail already tells the
+     * reader to look, and the count in {@see summarize()} still includes them (api-surface-coherence 128,
+     * exposed by flagging {@see AuditError}'s gate arm, which is a Fail that measured nothing).
      */
     private function marker(DoctorStatus $status, bool $conclusive = true): string
     {
-        if (! $conclusive) {
+        if (! $conclusive && $status === DoctorStatus::Pass) {
             return '[----]';
         }
 

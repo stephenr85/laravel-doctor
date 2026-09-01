@@ -74,7 +74,20 @@ class AuditError
                 ? 'A GATE audit that could not run has not verified its subject, so it reports Fail: unverified is not passed.'
                 : 'The rest of the run completed; this audit contributed no findings, which is not the same as finding nothing.');
 
-        return $gate ? Finding::fail($check, $detail) : Finding::warn($check, $detail);
+        // BOTH arms measured nothing — that is what an audit that could not run IS, and the prose above
+        // has said so since before the flag existed ("contributed no findings, which is not the same as
+        // finding nothing"). Conclusiveness is orthogonal to severity (the reason 124 put it off the enum),
+        // so the gate arm stays a Fail AND carries the flag: "unverified is not passed" is the severity
+        // ruling; "it did not measure" is the separate fact. Retro-flagged by api-surface-coherence 128 —
+        // leaving it out made DoctorReport::inconclusive() omit the estate's most important inconclusive
+        // event, which is a lie by omission in the very population the flag was built to report. Status is
+        // unchanged either way, so no floor and no exit code moves.
+        return new Finding(
+            $gate ? DoctorStatus::Fail : DoctorStatus::Warn,
+            $check,
+            $detail,
+            conclusive: false,
+        );
     }
 
     /** One line, bounded — a QueryException's message carries whole SQL and would swamp the report. */

@@ -1,5 +1,7 @@
 <?php
 
+use RuntimeException;
+use Rushing\Doctor\AuditError;
 use Rushing\Doctor\DoctorAudit;
 use Rushing\Doctor\DoctorRegistration;
 use Rushing\Doctor\DoctorRenderer;
@@ -141,4 +143,54 @@ it('renders a wholly conclusive report byte-for-byte as it always did', function
         '[FAIL] b — broken',
         '1 passed, 0 warned, 1 failed.',
     ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| api-surface-coherence 128 — the sweep's two rulings
+|--------------------------------------------------------------------------
+*/
+
+it('flags an audit that could not run as inconclusive on BOTH arms, without moving its status', function () {
+    $advisory = AuditError::running(stdClass::class, gate: false, e: new RuntimeException('boom'));
+    $gated = AuditError::running(stdClass::class, gate: true, e: new RuntimeException('boom'));
+
+    // An audit that threw did not measure its subject — that is what it IS — so both arms carry the flag.
+    expect($advisory->conclusive)->toBeFalse()
+        ->and($gated->conclusive)->toBeFalse();
+
+    // …and the severity ruling is untouched: advisory warns, a gate that could not verify still fails.
+    expect($advisory->status)->toBe(DoctorStatus::Warn)
+        ->and($gated->status)->toBe(DoctorStatus::Fail);
+});
+
+it('reports the audit-errored findings in the inconclusive population, which is the point of flagging them', function () {
+    $report = new DoctorReport([
+        Finding::pass('a', 'clean'),
+        AuditError::running(stdClass::class, gate: true, e: new RuntimeException('boom')),
+    ]);
+
+    expect($report->inconclusive())->toHaveCount(1)
+        ->and($report->inconclusive()[0]->check)->toBe(AuditError::CHECK)
+        ->and($report->worst())->toBe(DoctorStatus::Fail); // still gates exactly as before
+});
+
+it('displaces the badge only for a Pass, so an inconclusive Warn or Fail never hides its severity', function () {
+    $lines = [];
+    $renderer = new DoctorRenderer(function (string $line) use (&$lines) {
+        $lines[] = $line;
+    });
+
+    $renderer->render(new DoctorReport([
+        Finding::inconclusive('empty', 'nothing to measure'),
+        new Finding(DoctorStatus::Warn, 'warned', 'measured nothing, and that is worth a warning', conclusive: false),
+        AuditError::running(stdClass::class, gate: true, e: new RuntimeException('boom')),
+    ]));
+
+    $rendered = implode("\n", $lines);
+
+    expect($rendered)->toContain('[----] empty')
+        ->and($rendered)->toContain('[WARN] warned')      // NOT [----] — the severity survives
+        ->and($rendered)->toContain('[FAIL] '.AuditError::CHECK)
+        ->and($rendered)->toContain('3 of those measured nothing');
 });
